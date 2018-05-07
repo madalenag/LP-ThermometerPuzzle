@@ -1,3 +1,4 @@
+
 %---------------------------
 % Madalena Galrinho - 87546
 %---------------------------
@@ -11,7 +12,6 @@ membro_linha(Pos, [L|_], L) :-
 	member(Pos,L).
 membro_linha(Pos, [_|R], Linha) :- 
 	membro_linha(Pos, R, Linha).
-
 
 
 %-----------------------------------------------------------------------------
@@ -34,7 +34,6 @@ propaga([P|_], Pos, Posicoes) :-
 	sort(Lista, Posicoes).
 
 
-
 %-----------------------------------------------------------------------------
 % nao_altera_linhas_anteriores(Posicoes, L, Ja_Preenchidas): 
 % verifica se todas as posicoes da lista Posicoes, que pertencem a 
@@ -50,11 +49,10 @@ nao_altera_linhas_anteriores([(X,_)|R], L, Ja_Preenchidas) :-
 	nao_altera_linhas_anteriores(R, L, Ja_Preenchidas).
 
 
-
 %-----------------------------------------------------------------------------
-% posicoes_de_uma_coluna(C, L, L_Coluna): 
-% dada uma coluna C e uma lista L, todos os elementos de L que
-% pertencem a' coluna C estao presentes na lista L_Coluna.
+% posicoes_de_uma_coluna(C, L, L_Coluna): dada uma coluna C e uma 
+% lista L, todos os elementos de L que pertencem a' coluna C 
+% estao presentes na lista L_Coluna.
 %-----------------------------------------------------------------------------
 posicoes_de_uma_coluna(_, [], []).
 posicoes_de_uma_coluna(C, [(X,Y)|R], [(X,Y)|Res]) :-
@@ -64,12 +62,10 @@ posicoes_de_uma_coluna(C, [_|R], Lista) :-
 	posicoes_de_uma_coluna(C, R, Lista).
 
 
-
 %-----------------------------------------------------------------------------
-% junta_posicoes_coluna(C, L, L_Coluna): 
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
+% junta_posicoes_coluna(C, L, L_Coluna): dada uma coluna C, CTotal 
+% representa a lista com apenas os elementos das listas L1 e L2
+% que estao na coluna C, sem elementos repetidos.
 %-----------------------------------------------------------------------------
 junta_posicoes_coluna(C, L1, L2, CTotal) :-
 	posicoes_de_uma_coluna(C, L1, CL1),
@@ -78,19 +74,23 @@ junta_posicoes_coluna(C, L1, L2, CTotal) :-
 	sort(LTotal, CTotal).
 
 
-
 %-----------------------------------------------------------------------------
-% total_coluna(Puz, C, Total): 
-% Total e' o total da coluna C do puzzle Puz
+% total_coluna(Puz, C, Total): Total e' o total da coluna C do puzzle Puz
 %-----------------------------------------------------------------------------
 total_coluna(Puz, C, Total) :-
 	nth1(3, Puz, Linha),
     nth1(C, Linha, Total).
 
 
+%-----------------------------------------------------------------------------
+% total_coluna(Puz, C, Total): Total e' o total da coluna C do puzzle Puz
+%-----------------------------------------------------------------------------
 linha_das_posicoes([(X,_)|_], L) :-
 	L = X.
 
+%-----------------------------------------------------------------------------
+% total_coluna(Puz, C, Total): Total e' o total da coluna C do puzzle Puz
+%-----------------------------------------------------------------------------
 dim_puzzle(L, Dim) :-
 	last(L, (_,Y)),
 	Dim = Y.
@@ -121,7 +121,6 @@ verifica_colunas(Puz, Ja_Preenchidas, Possibilidades_L, Posicoes_linha) :-
 	verifica_parcial(Puz, Ja_Preenchidas, Dim, Possibilidades_L).
 
 
-
 %-----------------------------------------------------------------------------
 % dada uma coluna C, CTotal representa a lista com apenas os 
 % elementos das listas L1 e L2 que estao na coluna C,
@@ -132,6 +131,7 @@ igual_total_linha(Total, Lista, Lista_Posicoes) :-
 	posicoes_de_uma_linha(L, Lista, Posicoes), !,
     length(Posicoes, Dim_Lista),
     Total == Dim_Lista.
+
 
 %-----------------------------------------------------------------------------
 % dada uma coluna C, CTotal representa a lista com apenas os 
@@ -152,7 +152,6 @@ propaga_combinacao(Puz, [P|R], Final) :-
 propaga_combinacao_sem_repetidos(Puz, L, S_Final) :-
 	propaga_combinacao(Puz, L, Final),
 	sort(Final, S_Final).
-
 
 
 %-----------------------------------------------------------------------------
@@ -191,7 +190,6 @@ verifica_posicoes_de_linha([P|R], L) :-
 	verifica_posicoes_de_linha(R, L).
 
 
-
 %-----------------------------------------------------------------------------
 % dada uma coluna C, CTotal representa a lista com apenas os 
 % elementos das listas L1 e L2 que estao na coluna C,
@@ -211,7 +209,6 @@ comb(K, L, [E | C_L_E]) :-
 	append(_, [E | L_E], L),
 	K1 is K - 1,
 	comb(K1, L_E, C_L_E).
-
 
 combinacoes_totais(L,N,Res) :-
 	findall(T, comb(N,L,T), Res).
@@ -244,7 +241,63 @@ verifica_combinacoes(Puz, Posicoes_linha, Total, Ja_Preenchidas, [_|R], Poss) :-
 	verifica_combinacoes(Puz, Posicoes_linha, Total, Ja_Preenchidas, R, Poss).
 
 
+
+%-----------------------------------------------------------------------------
+% dada uma coluna C, CTotal representa a lista com apenas os 
+% elementos das listas L1 e L2 que estao na coluna C,
+% sem elementos repetidos.
+%-----------------------------------------------------------------------------
 possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidades_L) :-
 	combinacoes_totais(Posicoes_linha, Total, Combinacoes),
 	verifica_combinacoes(Puz, Posicoes_linha, Total, Ja_Preenchidas, Combinacoes, Poss),
 	sort(Poss, Possibilidades_L).
+
+
+%-----------------------------------------------------------------------------
+% dada uma coluna C, CTotal representa a lista com apenas os 
+% elementos das listas L1 e L2 que estao na coluna C,
+% sem elementos repetidos.
+%-----------------------------------------------------------------------------
+
+total_linha(Puz, L, Total) :-
+	nth1(2, Puz, Linha),
+    nth1(L, Linha, Total).
+
+fill([], _, Dim, Cont) :-
+  Cont =:= Dim + 1.
+fill([P|R], L, Dim, Cont) :-
+  P = (L, Cont),
+  Cont1 is Cont + 1,
+  fill(R, L, Dim, Cont1).
+
+
+informacoes_linha(Puz, L, Posicoes_linha, Total, Dim) :-
+  length(Posicoes_linha, Dim),
+  total_linha(Puz, L, Total),
+  fill(Posicoes_linha, L, Dim, 1).
+
+
+
+resolve_linhas(_, Cont_Linha, Ja_Preenchidas,Sol,Dim) :-
+  Dim1 is Dim + 1,
+  Cont_Linha =:= Dim1,
+  Sol = Ja_Preenchidas.
+resolve_linhas(Puz, Cont_Linha, Ja_Preenchidas, Sol, Dim) :-
+  informacoes_linha(Puz, Cont_Linha, Posicoes_linha, Total, Dim),
+  possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Poss),
+  tenta_com_possibilidades(Puz, Cont_Linha, Ja_Preenchidas, Poss, Sol, Dim),
+  !.
+
+
+tenta_com_possibilidades(_, _, _,[],_,_).
+tenta_com_possibilidades(Puz, Cont_Linha, Ja_Preenchidas, [P|R], Sol, Dim) :-
+  append(P, Ja_Preenchidas, Ja_Preenchidas_P),
+  sort(Ja_Preenchidas_P, S_Ja_Preenchidas),
+  Cont_Linha_1 is Cont_Linha + 1,
+  resolve_linhas(Puz, Cont_Linha_1, S_Ja_Preenchidas, Sol, Dim),
+  tenta_com_possibilidades(Puz, Cont_Linha, Ja_Preenchidas, R, Sol, Dim).
+
+
+resolve([P,Y|R], Sol) :-
+  length(Y, Dim),
+  resolve_linhas([P,Y|R], 1, [], Sol, Dim).
