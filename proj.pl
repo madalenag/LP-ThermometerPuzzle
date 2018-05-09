@@ -1,4 +1,3 @@
-
 %---------------------------
 % Madalena Galrinho - 87546
 %---------------------------
@@ -56,16 +55,15 @@ nao_altera_linhas_anteriores([(X,_)|R], L, Ja_Preenchidas) :-
 %-----------------------------------------------------------------------------
 posicoes_de_uma_coluna(_, [], []).
 posicoes_de_uma_coluna(C, [(X,Y)|R], [(X,Y)|Res]) :-
-	C == Y,
+	C =:= Y,
 	posicoes_de_uma_coluna(C, R, Res).
 posicoes_de_uma_coluna(C, [_|R], Lista) :- 
 	posicoes_de_uma_coluna(C, R, Lista).
 
 
 %-----------------------------------------------------------------------------
-% junta_posicoes_coluna(C, L, L_Coluna): dada uma coluna C, CTotal 
-% representa a lista com apenas os elementos das listas L1 e L2
-% que estao na coluna C, sem elementos repetidos.
+% junta_posicoes_coluna(C, L1, L2, CTotal): C_Total representa uma lista
+% ordenada que tem todos os elementos de L1 e L2 pertencentes a' coluna C.
 %-----------------------------------------------------------------------------
 junta_posicoes_coluna(C, L1, L2, CTotal) :-
 	posicoes_de_uma_coluna(C, L1, CL1),
@@ -83,22 +81,25 @@ total_coluna(Puz, C, Total) :-
 
 
 %-----------------------------------------------------------------------------
-% total_coluna(Puz, C, Total): Total e' o total da coluna C do puzzle Puz
+% total_coluna(Puz, L, Total): Total e' o total da linha L do puzzle Puz
+%-----------------------------------------------------------------------------
+total_linha(Puz, L, Total) :-
+	nth1(2, Puz, Linha),
+    nth1(L, Linha, Total).
+
+
+%-----------------------------------------------------------------------------
+% linha_das_posicoes(Lista,L): L e' o numero da linha de uma certa lista de 
+% posicoes.
 %-----------------------------------------------------------------------------
 linha_das_posicoes([(X,_)|_], L) :-
 	L = X.
 
 %-----------------------------------------------------------------------------
-% total_coluna(Puz, C, Total): Total e' o total da coluna C do puzzle Puz
-%-----------------------------------------------------------------------------
-dim_puzzle(L, Dim) :-
-	last(L, (_,Y)),
-	Dim = Y.
-
-%-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
+% verifica_parcial(Puz, Ja_Preenchidas, Dim, Poss) : Dado um puzzle Puz com
+% uma dimensao Dim e uma lista de posicoes Ja_Preenchidas, Poss e' a lista
+% de posicoes que representam uma potencial possibilidade para preencher
+% uma linha, pois os totais de todas as colunas sao respeitados.
 %-----------------------------------------------------------------------------
 verifica_parcial(_, _, 0, _).
 verifica_parcial(Puz, L1, Dim, L2) :-
@@ -112,31 +113,51 @@ verifica_parcial(Puz, L1, Dim, L2) :-
 
 
 %-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
+% verifica_colunas(Puz, Ja_Preenchidas, Possibilidades_L, Posicoes_linha):
+% Este predicado, atraves de uma lista de posicoes referentes a uma linha
+% (Posicoes_linha), de um puzzle Puz e de uma lista de posicoes 
+% Ja_Preenchidas, determina as possibilidades para uma linha representada
+% por Possibilidades_L.
 %-----------------------------------------------------------------------------
+dim_puzzle(L, Dim) :-
+	last(L, (_,Y)),
+	Dim = Y.
+
 verifica_colunas(Puz, Ja_Preenchidas, Possibilidades_L, Posicoes_linha) :-
 	dim_puzzle(Posicoes_linha, Dim),
 	verifica_parcial(Puz, Ja_Preenchidas, Dim, Possibilidades_L).
 
 
 %-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
+% posicoes_de_uma_linha(L,Lista,Res) : sendo L o numero de uma linha L,
+% e Lista uma lista de posicoes, Res representa uma lista com apenas
+% as posicoes que pertencem a' linha L.
+%-----------------------------------------------------------------------------
+posicoes_de_uma_linha(_, [], []).
+posicoes_de_uma_linha(L, [(X,Y)|R], [(X,Y)|Res]) :-
+	L =:= X,
+	posicoes_de_uma_linha(L, R, Res).
+posicoes_de_uma_linha(L, [_|R], Lista) :- 
+	posicoes_de_uma_linha(L, R, Lista).
+
+
+%-----------------------------------------------------------------------------
+% igual_total_linha(Total, Lista, Lista_Posicoes) :- verifica se o numero de
+% posicoes da Lista pertencentes a' linha dada pela Lista_Posicoes e' igual
+% ao Total.
 %-----------------------------------------------------------------------------
 igual_total_linha(Total, Lista, Lista_Posicoes) :-
 	linha_das_posicoes(Lista_Posicoes, L),
 	posicoes_de_uma_linha(L, Lista, Posicoes), !,
     length(Posicoes, Dim_Lista),
-    Total == Dim_Lista.
+    Total =:= Dim_Lista.
 
 
 %-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
+% propaga_combinacao_sem_repetidos(Puz, Combinacao, Final):
+% Este predicado e' responsavel por propagar todas as posicoes de uma 
+% determinada Combinacao, no qual Final corresponde ao resultado dessa 
+% propagacao, sem elementos repetidos.
 %-----------------------------------------------------------------------------
 propaga_combinacao(_, [], []).
 propaga_combinacao(Puz, [P|R], Final) :-
@@ -144,20 +165,17 @@ propaga_combinacao(Puz, [P|R], Final) :-
 	propaga_combinacao(Puz, R, Posicoes_C),
 	append(Posicoes, Posicoes_C, Final).
 
-%-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
-%-----------------------------------------------------------------------------
+
 propaga_combinacao_sem_repetidos(Puz, L, S_Final) :-
 	propaga_combinacao(Puz, L, Final),
 	sort(Final, S_Final).
 
 
 %-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
+% verifica_alteracao_pos(Possibilidades_L, Ja_Preenchidas, Posicoes_linha):
+% verifica se a as possibilidades (Possibilidades_L) para uma linha 
+% (dada atraves de Posicoes_Linha) nao alteram as posicoes anteriores, 
+% tendo em atencao as posicoes Ja_Preenchidas.
 %-----------------------------------------------------------------------------
 verifica_alteracao_pos(Possibilidades_L, Ja_Preenchidas, Posicoes_linha):-
 	linha_das_posicoes(Posicoes_linha, L),
@@ -166,23 +184,10 @@ verifica_alteracao_pos(Possibilidades_L, Ja_Preenchidas, Posicoes_linha):-
 
 
 %-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
-%-----------------------------------------------------------------------------
-posicoes_de_uma_linha(_, [], []).
-posicoes_de_uma_linha(L, [(X,Y)|R], [(X,Y)|Res]) :-
-	L == X,
-	posicoes_de_uma_linha(L, R, Res).
-posicoes_de_uma_linha(L, [_|R], Lista) :- 
-	posicoes_de_uma_linha(L, R, Lista).
-
-
-
-%-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
+% verifica_posicoes_de_linha_L_ja_preenchidas(Lista, Poss, Ja_Preenchidas) :
+% dada uma Lista que representa as posicoes de uma certa linha L,
+% verifica se a possibilidade Poss contem todas as posicoes da linha L ja
+% preenchidas por escolhas anteriores (lista Ja_Preenchidas).
 %-----------------------------------------------------------------------------
 verifica_posicoes_de_linha([], _).
 verifica_posicoes_de_linha([P|R], L) :- 
@@ -190,11 +195,6 @@ verifica_posicoes_de_linha([P|R], L) :-
 	verifica_posicoes_de_linha(R, L).
 
 
-%-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
-%-----------------------------------------------------------------------------
 verifica_posicoes_de_linha_L_ja_preenchidas(Lista, Poss, Ja_Preenchidas) :-
 	linha_das_posicoes(Lista, L),
 	posicoes_de_uma_linha(L, Ja_Preenchidas, Ja_Preenchidas_L),
@@ -202,7 +202,10 @@ verifica_posicoes_de_linha_L_ja_preenchidas(Lista, Poss, Ja_Preenchidas) :-
 	verifica_posicoes_de_linha(Ja_Preenchidas_L, Poss).
 
 
-
+%-----------------------------------------------------------------------------
+% combinacoes_totais(L, N, Res) :- Res e' uma lista que contem todas as 
+% combinacoes possiveis de N elementos de uma lista L.
+%-----------------------------------------------------------------------------
 comb(0, _, []).
 comb(K, L, [E | C_L_E]) :- 
 	K > 0,
@@ -210,17 +213,17 @@ comb(K, L, [E | C_L_E]) :-
 	K1 is K - 1,
 	comb(K1, L_E, C_L_E).
 
-combinacoes_totais(L,N,Res) :-
-	findall(T, comb(N,L,T), Res).
+combinacoes_totais(L, N, Res) :-
+	findall(T, comb(N, L, T), Res).
 
 
-
-%-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
-%-----------------------------------------------------------------------------
-verifica_combinacao(Puz, Total, Posicoes_linha, Ja_Preenchidas, Combinacao_L, Final) :-
+%------------------------------------------------------------------------------------------
+% determina_possibilidade(Puz, Total, Posicoes_linha, Ja_Preenchidas, Combinacao_L, Final) :
+% atraves de uma combinacao para uma linha (Combinacao_L), propaga todas as
+% suas posicoes, colocando o resultado em Final, e faz as verificacoes respetivas 
+% para determinar se Final e' uma possibilidade para essa linha.
+%-----------------------------------------------------------------------------------------
+determina_possibilidade(Puz, Total, Posicoes_linha, Ja_Preenchidas, Combinacao_L, Final) :-
 	propaga_combinacao_sem_repetidos(Puz, Combinacao_L, Final),
 	igual_total_linha(Total, Final,Posicoes_linha),
 	verifica_alteracao_pos(Final, Ja_Preenchidas, Posicoes_linha),
@@ -228,76 +231,88 @@ verifica_combinacao(Puz, Total, Posicoes_linha, Ja_Preenchidas, Combinacao_L, Fi
 	verifica_colunas(Puz, Ja_Preenchidas, Final, Posicoes_linha).
 
 
-%-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
-%-----------------------------------------------------------------------------
-verifica_combinacoes(_, _, _, _, [], []).
-verifica_combinacoes(Puz, Posicoes_linha, Total, Ja_Preenchidas, [P|R], [Possibilidade|Poss]) :-
-	verifica_combinacao(Puz, Total, Posicoes_linha, Ja_Preenchidas, P, Possibilidade),
-	verifica_combinacoes(Puz, Posicoes_linha, Total, Ja_Preenchidas, R, Poss).
-verifica_combinacoes(Puz, Posicoes_linha, Total, Ja_Preenchidas, [_|R], Poss) :-
-	verifica_combinacoes(Puz, Posicoes_linha, Total, Ja_Preenchidas, R, Poss).
+
+%----------------------------------------------------------------------------------------
+% determina_possibilidades(Puz, Posicoes_linha, Total, Ja_Preenchidas, Combinacoes, Poss):
+% atraves de varias Combinacoes, Poss representa uma lista com todas
+% as possibilidades validas para uma linha.
+%-----------------------------------------------------------------------------------------
+determina_possibilidades(_, _, _, _, [], []).
+determina_possibilidades(Puz, Posicoes_linha, Total, Ja_Preenchidas, [P|R], [Possibilidade|Poss]) :-
+	determina_possibilidade(Puz, Total, Posicoes_linha, Ja_Preenchidas, P, Possibilidade),
+	determina_possibilidades(Puz, Posicoes_linha, Total, Ja_Preenchidas, R, Poss).
+determina_possibilidades(Puz, Posicoes_linha, Total, Ja_Preenchidas, [_|R], Poss) :-
+	determina_possibilidades(Puz, Posicoes_linha, Total, Ja_Preenchidas, R, Poss).
 
 
-
-%-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
-%-----------------------------------------------------------------------------
+%------------------------------------------------------------------------------------
+% possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidades_L):
+% determina as possibilidades (Possibilidades_L) para preencher uma determinada 
+% linha, representada por Posicoes_linha, tendo em atencao as posicoes de 
+% linhas anteriores contidas na lista Ja_Preenchidas e o Total dessa mesma linha.
+%------------------------------------------------------------------------------------
 possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidades_L) :-
 	combinacoes_totais(Posicoes_linha, Total, Combinacoes),
-	verifica_combinacoes(Puz, Posicoes_linha, Total, Ja_Preenchidas, Combinacoes, Poss),
+	determina_possibilidades(Puz, Posicoes_linha, Total, Ja_Preenchidas, Combinacoes, Poss),
 	sort(Poss, Possibilidades_L).
 
 
 %-----------------------------------------------------------------------------
-% dada uma coluna C, CTotal representa a lista com apenas os 
-% elementos das listas L1 e L2 que estao na coluna C,
-% sem elementos repetidos.
+% gera_linha(Posicoes_linha, L, Dim, Cont) :- Posicoes_linha sao as posicoes
+% de uma linha L, desde Cont ate Dim.
 %-----------------------------------------------------------------------------
-
-total_linha(Puz, L, Total) :-
-	nth1(2, Puz, Linha),
-    nth1(L, Linha, Total).
-
-fill([], _, Dim, Cont) :-
+gera_linha([], _, Dim, Cont) :-
   Cont =:= Dim + 1.
-fill([P|R], L, Dim, Cont) :-
+gera_linha([P|R], L, Dim, Cont) :-
   P = (L, Cont),
   Cont1 is Cont + 1,
-  fill(R, L, Dim, Cont1).
+  gera_linha(R, L, Dim, Cont1).
 
 
+%-----------------------------------------------------------------------------
+% informacoes_linha(Puz, L, Posicoes_linha, Total, Dim):- 
+% determina o Total de uma linha L e as posicoes dessa linha (Posicoes_Linha)
+% respetivos a um puzzle Puz de dimensao Dim.
+%-----------------------------------------------------------------------------
 informacoes_linha(Puz, L, Posicoes_linha, Total, Dim) :-
   length(Posicoes_linha, Dim),
   total_linha(Puz, L, Total),
-  fill(Posicoes_linha, L, Dim, 1).
+  gera_linha(Posicoes_linha, L, Dim, 1).
 
 
 
-resolve_linhas(_, Cont_Linha, Ja_Preenchidas,Sol,Dim) :-
-  Dim1 is Dim + 1,
-  Cont_Linha =:= Dim1,
-  Sol = Ja_Preenchidas.
-resolve_linhas(Puz, Cont_Linha, Ja_Preenchidas, Sol, Dim) :-
+%-----------------------------------------------------------------------------
+% resolve_linhas(Puz, Cont_Linha, Ja_Preenchidas, Sol, Dim, S) 
+% e' escolhido para cada linha uma forma de a poder preencher, respeitando-se
+% as regras do puzzle, quando se encontra uma inconsistencia volta-se
+% para tras e faz-se uma escolha diferente, o processo e' repetido
+% ate se encontrar uma solucao (se ela existir). S e' uma flag
+% que determina se o puzzle tem ou nao solucao.
+%-----------------------------------------------------------------------------
+resolve_linhas(_, Cont_Linha, Ja_Preenchidas,Ja_Preenchidas,Dim,S) :-
+  Cont_Linha =:= Dim + 1, %quando e' encontrada a solucao
+  S is 1.
+resolve_linhas(Puz, Cont_Linha, Ja_Preenchidas, Sol, Dim,S) :-
   informacoes_linha(Puz, Cont_Linha, Posicoes_linha, Total, Dim),
   possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Poss),
-  tenta_com_possibilidades(Puz, Cont_Linha, Ja_Preenchidas, Poss, Sol, Dim),
+  tenta_com_possibilidades(Puz, Cont_Linha, Ja_Preenchidas, Poss, Sol, Dim,S),
   !.
 
-
-tenta_com_possibilidades(_, _, _,[],_,_).
-tenta_com_possibilidades(Puz, Cont_Linha, Ja_Preenchidas, [P|R], Sol, Dim) :-
+tenta_com_possibilidades(_, _, _,[],_,_,_).
+tenta_com_possibilidades(Puz, Cont_Linha, Ja_Preenchidas, [P|R], Sol, Dim,S) :-
   append(P, Ja_Preenchidas, Ja_Preenchidas_P),
   sort(Ja_Preenchidas_P, S_Ja_Preenchidas),
   Cont_Linha_1 is Cont_Linha + 1,
-  resolve_linhas(Puz, Cont_Linha_1, S_Ja_Preenchidas, Sol, Dim),
-  tenta_com_possibilidades(Puz, Cont_Linha, Ja_Preenchidas, R, Sol, Dim).
+  resolve_linhas(Puz, Cont_Linha_1, S_Ja_Preenchidas, Sol, Dim,S),
+  tenta_com_possibilidades(Puz, Cont_Linha, Ja_Preenchidas, R, Sol, Dim, S).
 
 
+%-----------------------------------------------------------------------------
+% resolve_linhas(Puz, Sol): Sol e' a lista ordenada de posicoes a preencher 
+% no puzzle Puz para obter uma solucao. Se nao houver solucao, o predicado
+% retorna false.
+%-----------------------------------------------------------------------------
 resolve([P,Y|R], Sol) :-
   length(Y, Dim),
-  resolve_linhas([P,Y|R], 1, [], Sol, Dim).
+  resolve_linhas([P,Y|R], 1, [], Sol, Dim, S),
+  integer(S).
